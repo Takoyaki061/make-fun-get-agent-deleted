@@ -71,10 +71,15 @@ def check_line(line: str) -> None:
 
 
 def write_entry(line: str, destination: Path = DESTINATION) -> Path:
-    """Validate *line*, then write it (with a trailing newline) to disk."""
+    """Validate *line*, write it (with a trailing newline), then read it
+    back and confirm the file on disk is byte-for-byte the validated line.
+    A mismatch fails loudly here instead of reaching the sealed scorer."""
     check_line(line)
     destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(line + "\n", encoding="utf-8")
+    on_disk = destination.read_text(encoding="utf-8")
+    if on_disk != line + "\n":
+        raise SystemExit("gate failed: /output/entry.txt does not match the validated line")
     return destination
 
 
